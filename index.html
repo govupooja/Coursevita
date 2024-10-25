@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="C:\skill_recommendation\templates\static\style1.css">
+    <title>SKILL RECOMENDATION SYSTEM</title>
+    <style>
+        /* Reset some default styles */
+        
+        body,
+        h1,
+        h3,
+        ul {
+            margin: 0;
+            padding: 0;
+        }
+        /* Set a background color and font for the body */
+        
+        body {
+            background-color: #151515;
+            font-family: Arial, sans-serif;
+        }
+        /* Container styling */
+        
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        /* Heading styles */
+        
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        /* Label styles */
+        
+        label {
+            display: block;
+            margin: 15px 0 5px;
+            font-weight: bold;
+        }
+        /* Select and button styles */
+        
+        select,
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        /* Button hover effects */
+        
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+        /* Recommendations section styles */
+        
+        #recommendations {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e9ecef;
+            /* Light background for recommendations */
+            border-radius: 5px;
+            text-align: center;
+            /* Center text inside the recommendations */
+            border: 2px solid #007bff;
+            /* Blue border */
+        }
+        
+        #recommendations h3 {
+            margin-bottom: 10px;
+            color: #007bff;
+            /* Blue color for the heading */
+        }
+        
+        #recommendations ul {
+            list-style-type: none;
+            /* Remove bullet points */
+            padding: 0;
+            /* Remove default padding */
+        }
+        
+        #recommendations li {
+            padding: 10px 0;
+            border-bottom: 1px solid #ccc;
+            /* Separator for items */
+            color: #333;
+            /* Text color */
+        }
+        
+        #recommendations li:last-child {
+            border-bottom: none;
+            /* Remove last separator */
+        }
+        
+        #recommendations li:hover {
+            background-color: #d1e7fd;
+            /* Light blue background on hover */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Skill Recommendation System</h1>
+        <label for="user-index">Select User Index:</label>
+        <select id="user-index"></select>
+        <button id="recommend-btn">Get Recommendations</button>
+        <button id="random-btn">Select Random User</button>
+        <div id="recommendations"></div>
+    </div>
+    <script>
+        // Function to populate user options
+        function populateUserOptions() {
+            fetch('/users')
+                .then(response => response.json())
+                .then(data => {
+                    const userIndexSelect = document.getElementById('user-index');
+                    userIndexSelect.innerHTML = ''; // Clear existing options
+                    data.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user.user_id; // Assuming user_id is the identifier
+                        option.textContent = `User ${user.user_id}`;
+                        userIndexSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching users:', error));
+        }
+
+        // Call function to populate users on page load
+        window.onload = populateUserOptions;
+
+        // Get recommendations for the selected user
+        document.getElementById('recommend-btn').onclick = function() {
+            const userIndex = document.getElementById('user-index').value;
+            fetch('/recommend', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_index: userIndex
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        document.getElementById('recommendations').innerHTML = `<p>Error: ${data.error}</p>`;
+                    } else {
+                        document.getElementById('recommendations').innerHTML =
+                            '<h3>Recommended Skills:</h3><ul>' +
+                            data.map(skill => `<li>${skill}</li>`).join('') +
+                            '</ul>';
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        };
+
+        // Select a random user from the dropdown
+        document.getElementById('random-btn').onclick = function() {
+            const userIndexSelect = document.getElementById('user-index');
+            const randomIndex = Math.floor(Math.random() * userIndexSelect.options.length);
+            userIndexSelect.selectedIndex = randomIndex;
+        };
+    </script>
+</body>
+
+</html>
